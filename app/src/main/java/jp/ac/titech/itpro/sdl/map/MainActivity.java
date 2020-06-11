@@ -10,6 +10,8 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -25,6 +27,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.tasks.OnSuccessListener;
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback,
         GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
@@ -38,6 +41,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private TextView infoView;
     private GoogleMap map;
+    private Button nowPlaceButton;
 
     private GoogleApiClient apiClient;
     private FusedLocationProviderClient locationClient;
@@ -87,13 +91,19 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     return;
                 }
                 Location location = locationResult.getLastLocation();
-                LatLng ll = new LatLng(location.getLatitude(), location.getLongitude());
-                infoView.setText(getString(R.string.latlng_format, ll.latitude, ll.longitude));
+                final LatLng ll = new LatLng(location.getLatitude(), location.getLongitude());
                 if (map == null) {
                     Log.d(TAG, "onLocationResult: map == null");
                     return;
                 }
-                map.animateCamera(CameraUpdateFactory.newLatLng(ll));
+                nowPlaceButton = findViewById(R.id.now_location);
+                nowPlaceButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        infoView.setText(getString(R.string.latlng_format, ll.latitude, ll.longitude));
+                        map.animateCamera(CameraUpdateFactory.newLatLngZoom(ll, 15f));
+                    }
+                });
             }
         };
     }
@@ -135,6 +145,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onMapReady(GoogleMap map) {
         Log.d(TAG, "onMapReady");
+        LatLng ll = new LatLng(35.604881, 139.683914); // 東京工業大学本館
+        map.moveCamera(CameraUpdateFactory.newLatLng(ll));
         map.moveCamera(CameraUpdateFactory.zoomTo(15f));
         this.map = map;
     }
